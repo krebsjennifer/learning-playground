@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprint Name Generator 🚀</title>
+
+    <!-- ============================================================
+         STYLES
+         ============================================================ -->
+    <style>
+        :root {
+            --primary:       #6366f1;
+            --primary-dark:  #4f46e5;
+            --secondary:     #ec4899;
+            --accent:        #06b6d4;
+            --success:       #22c55e;
+            --warning:       #f59e0b;
+            --danger:        #ef4444;
+
+            --bg:            #0f172a;
+            --surface:       #1e293b;
+            --surface2:      #293548;
+            --border:        #334155;
+
+            --text:          #f1f5f9;
+            --text-muted:    #94a3b8;
+            --text-dim:      #64748b;
+
+            --radius:        14px;
+            --radius-sm:     8px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px 16px 60px;
+        }
+
+        /* ── Layout ─────────────────────────────────────────── */
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ── Header ─────────────────────────────────────────── */
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            border-radius: var(--radius);
+            padding: 36px 28px 28px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .header p {
+            margin-top: 8px;
+            font-size: 1rem;
+            opacity: 0.88;
+            position: relative;
+        }
+        .shortcut-hint {
+            margin-top: 12px;
+            font-size: 0.78rem;
+            opacity: 0.65;
+            position: relative;
+        }
+        .shortcut-hint kbd {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: monospace;
+        }
+
+        /* ── Card ────────────────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .card-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+        }
+
+        /* ── Theme selector ──────────────────────────────────── */
+        .theme-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .theme-pill {
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+        .theme-pill:hover {
+            border-color: var(--primary);
+            color: var(--text);
+            background: rgba(99,102,241,0.08);
+        }
+        .theme-pill.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+        }
+
+        /* ── Generated name display ──────────────────────────── */
+        .name-display {
+            min-height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: 2px dashed var(--border);
+            background: var(--surface2);
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .name-display.has-name {
+            border-color: var(--primary);
+            border-style: solid;
+            background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.06));
+        }
+        .name-display .placeholder {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+        }
+        .name-display .sprint-name {
+            font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--text);
+        }
+        @keyframes pop {
+            0%   { transform: scale(0.95); opacity: 0.6; }
+            60%  { transform: scale(1.03); }
+            100% { transform: scale(1);    opacity: 1; }
+        }
+        .name-display.animate .sprint-name { animation: pop 0.35s ease forwards; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 11px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        .btn-generate {
+            flex: 1;
+            justify-content: center;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+        }
+        .btn-generate:not(:disabled):hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+        }
+        .btn-generate:not(:disabled):active { transform: translateY(0); }
+
+        .btn-ghost {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-ghost:not(:disabled):hover { background: var(--border); }
+
+        .btn-star { color: var(--warning); }
+        .btn-star.favorited { background: rgba(245,158,11,0.15); border-color: var(--warning); }
+
+        .btn-export {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            color: #fff;
+        }
+        .btn-export:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: background 0.15s;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+        .btn-icon:hover { background: var(--border); color: var(--text); }
+        .btn-icon.active { color: var(--warning); }
+
+        /* ── Two-column grid ─────────────────────────────────── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 620px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* ── List (history / favorites) ──────────────────────── */
+        .scroll-list {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .scroll-list::-webkit-scrollbar { width: 5px; }
+        .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--surface2);
+            border: 1px solid transparent;
+            margin-bottom: 6px;
+            transition: border-color 0.15s;
+        }
+        .list-item:last-child { margin-bottom: 0; }
+        .list-item:hover { border-color: var(--primary); }
+
+        .list-item-name {
+            flex: 1;
+            font-size: 0.875rem;
+            font-weight: 500;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+        .list-item-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
+        .count-badge {
+            font-size: 0.72rem;
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px 12px;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        /* ── Stats bar ───────────────────────────────────────── */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        /* ── Toast ───────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(90px);
+            background: var(--surface2);
+            color: var(--text);
+            padding: 11px 22px;
+            border-radius: 30px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            z-index: 9999;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.visible { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HTML STRUCTURE
+     ============================================================ -->
+<div class="container">
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🚀 Sprint Name Generator</h1>
+        <p>Generate epic, funny, and creative Agile sprint names</p>
+        <p class="shortcut-hint">Press <kbd>Space</kbd> or <kbd>Enter</kbd> to generate</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="statGenerated">0</div>
+            <div class="stat-label">Generated</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="statUnique">100K+</div>
+            <div class="stat-label">Possible Names</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="statFavorites">0</div>
+            <div class="stat-label">Favorites</div>
+        </div>
+    </div>
+
+    <!-- Theme Selector -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-label">🎨 Theme</span>
+        </div>
+        <div class="theme-pills" id="themePills">
+            <button class="theme-pill active" data-theme="random">🎲 Random</button>
+            <button class="theme-pill" data-theme="movies">🎬 Movies</button>
+            <button class="theme-pill" data-theme="dadJokes">😄 Dad Jokes</button>
+            <button class="theme-pill" data-theme="technology">💻 Technology</button>
+            <button class="theme-pill" data-theme="agile">📋 Agile</button>
+        </div>
+    </div>
+
+    <!-- Generator -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-label">✨ Generated Sprint Name</span>
+        </div>
+        <div class="name-display" id="nameDisplay">
+            <span class="placeholder">Click "Generate" to create your sprint name!</span>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-generate" id="btnGenerate">🎲 Generate Sprint Name</button>
+            <button class="btn btn-ghost" id="btnCopy" disabled>📋 Copy</button>
+            <button class="btn btn-ghost btn-star" id="btnFavorite" disabled>☆ Favorite</button>
+        </div>
+    </div>
+
+    <!-- History & Favorites -->
+    <div class="grid-2">
+
+        <!-- History -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-label">🕐 History <span class="count-badge" id="historyCount">0</span></span>
+                <button class="btn-icon" id="btnClearHistory" title="Clear history">🗑️</button>
+            </div>
+            <div class="scroll-list" id="historyList">
+                <div class="empty-state">No names generated yet</div>
+            </div>
+        </div>
+
+        <!-- Favorites -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-label">⭐ Favorites <span class="count-badge" id="favoritesCount">0</span></span>
+                <button class="btn btn-export" id="btnExport" disabled>💾 Export</button>
+            </div>
+            <div class="scroll-list" id="favoritesList">
+                <div class="empty-state">Star a name to save it here</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+'use strict';
+
+// ============================================================
+// DATA — word banks and theme configurations
+// ============================================================
+const DATA = {
+
+    devTerms: [
+        'Deploy', 'Merge', 'Commit', 'Sprint', 'Refactor', 'Release',
+        'Build', 'Branch', 'Pipeline', 'Bug', 'Feature', 'Hotfix',
+        'Debug', 'Test', 'Ship', 'Launch', 'Rollback', 'Rebase',
+        'Fork', 'Pull Request', 'Code Review', 'Standup', 'Backlog',
+        'Velocity', 'Epic', 'Patch', 'Update', 'Migration', 'Integration',
+        'Deployment', 'Regression', 'Iteration', 'Release Train',
+    ],
+
+    actionWords: [
+        'Running', 'Racing', 'Breaking', 'Fixing', 'Launching', 'Shipping',
+        'Hunting', 'Chasing', 'Dodging', 'Crushing', 'Conquering', 'Slaying',
+        'Surviving', 'Taming', 'Battling', 'Escaping', 'Mastering', 'Hacking',
+        'Rocking', 'Smashing', 'Cracking', 'Pushing', 'Pulling', 'Forking',
+        'Deploying', 'Debugging', 'Patching', 'Refactoring', 'Squashing',
+    ],
+
+    epicSuffixes: [
+        'Chronicles', 'Saga', 'Legacy', 'Awakens', 'Returns', 'Reloaded',
+        'Reborn', 'Reckoning', 'Rising', 'Strikes Back', 'Begins', 'Endgame',
+        'Evolution', 'Revolution', 'Resurrection', 'Redemption', 'Uprising',
+        'Unleashed', 'Unleashed Again', 'The Sequel', 'Part II',
+    ],
+
+    funnyTechTerms: [
+        'Rubber Duck', 'Ctrl Alt Defeat', 'Null Pointer', 'Infinite Loop',
+        'Merge Conflict', 'Technical Debt', 'Cache Me Outside', 'Stack Overflow',
+        'The Legacy Code', 'The Spaghetti Monster', 'Off by One', 'The Dark Pattern',
+        'The Memory Leak', 'The Race Condition', 'The Zombie Process',
+        'The Hot Fix', 'The Breaking Change', 'The Undefined Variable',
+        'The Bus Factor', 'The Yak Shave', 'The Big Rewrite', 'The Magic Number',
+    ],
+
+    themes: {
+        movies: {
+            refs: [
+                'Like It\'s Hot', 'Another Day', 'Awakens', 'Returns', 'Reloaded',
+                'Strikes Back', 'A New Hope', 'Endgame', 'Infinity War', 'Ragnarok',
+                'No Way Home', 'The Final Chapter', 'Rise of the Machines',
+                'Days of Future Past', 'The Last Stand', 'Beyond', 'Forever',
+                'Part Two', 'The Reckoning', 'The Beginning', 'The Dark Knight',
+                'Rises', 'Far From Home', 'Age of Ultron', 'The Multiverse',
+                'Across the Spider-Verse', 'The Last Jedi', 'The Phantom Menace',
+                'Revenge of the Sith', 'Into Darkness', 'First Contact',
+            ],
+            prefixes: [
+                'The', 'Return of the', 'Rise of the', 'Dawn of the',
+                'Age of the', 'Revenge of the', 'Attack of the',
+                'Night of the', 'Escape from the',
+            ],
+        },
+        dadJokes: {
+            refs: [
+                'Byte Me', 'Git Happens', 'Null and Void', 'Exception to the Rule',
+                'I\'ll Be Bug', 'Fork Around and Find Out', 'No Pain No Git',
+                'Ctrl Me Maybe', 'Stack and Awe', 'Commit to the Bit',
+                'Cache Money', 'A Tale of Two Tickets', 'Pride and Pull Requests',
+                'Gone with the Windows', 'Great Expectations Exceeded',
+                'The Buggening', 'To Infinity and Debug',
+                'May the Force-Push Be With You', 'You Had Me at Hello World',
+                '404: Fun Not Found', 'There\'s No Place Like 127.0.0.1',
+                'Alexa Stop the Build', 'Pimp My Pipeline', 'I Have No Idea What I\'m Doing',
+                'It Works on My Machine', 'Works in Prod Though',
+            ],
+            prefixes: [
+                'Operation', 'Mission', 'Project', 'The Great',
+            ],
+        },
+        technology: {
+            refs: [
+                'Ctrl Alt Defeat', 'Null Pointer Exception', 'Rubber Duck Debugging',
+                'Infinite Loop', 'Merge Conflict', 'Technical Debt', 'Cache Me Outside',
+                'Stack Overflow', 'Blue Screen of Death', '404 Not Found',
+                'Memory Leak', 'Race Condition', 'Spaghetti Code', 'Legacy Nightmare',
+                'Off by One Error', 'Undefined Behavior', 'Segmentation Fault',
+                'The Great Rewrite', 'Dependency Hell', 'Callback Hell',
+                'The Bus Error', 'The Null Island', 'The Bit Bucket',
+                'The Rubber Duck Protocol', 'The Golden Path',
+            ],
+            prefixes: [
+                'Operation', 'Protocol', 'Project', 'System', 'Module',
+            ],
+        },
+        agile: {
+            refs: [
+                'The Retrospective', 'The Standup', 'The Backlog Grooming',
+                'The Burndown', 'The Velocity Report', 'The Sprint Review',
+                'The Planning Poker', 'The Demo Day', 'The Epic Journey',
+                'The Story Point Saga', 'The Kanban Kingdom', 'The Scrum Master Plan',
+                'The Acceptance Criteria', 'The Definition of Done', 'The Release Train',
+                'The Refinement Session', 'The Capacity Planning',
+                'The Two-Week Window', 'The MVP Moment', 'The Product Vision',
+                'The Spike', 'The User Story', 'The Value Stream',
+            ],
+            prefixes: [
+                'The', 'Quest for the', 'Sprint of the', 'In Search of',
+            ],
+        },
+    },
+};
+
+// Pre-compute combined refs for Random theme (all themes pooled)
+DATA.allRefs     = Object.values(DATA.themes).flatMap(t => t.refs);
+DATA.allPrefixes = Object.values(DATA.themes).flatMap(t => t.prefixes);
+
+
+// ============================================================
+// STATE — in-memory session state
+// ============================================================
+const STATE = {
+    currentName:  '',
+    currentTheme: 'random',
+    history:      [],   // ordered oldest → newest
+    favorites:    [],   // ordered oldest → newest
+    usedNames:    new Set(),
+    totalGenerated: 0,
+};
+
+
+// ============================================================
+// GENERATOR LOGIC
+// ============================================================
+const Generator = {
+
+    /** Return a random element from an array. */
+    pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    },
+
+    /** Return the theme's refs array (or all refs for 'random'). */
+    getRefs(theme) {
+        return theme === 'random'
+            ? DATA.allRefs
+            : (DATA.themes[theme]?.refs ?? DATA.allRefs);
+    },
+
+    /** Return the theme's prefixes array (or all prefixes for 'random'). */
+    getPrefixes(theme) {
+        return theme === 'random'
+            ? DATA.allPrefixes
+            : (DATA.themes[theme]?.prefixes ?? DATA.allPrefixes);
+    },
+
+    /**
+     * Generate a sprint name using a random pattern.
+     * Retries up to MAX_ATTEMPTS to avoid duplicates within the session.
+     */
+    generate(theme) {
+        const MAX_ATTEMPTS = 60;
+        let name;
+        let attempts = 0;
+        do {
+            name = this.pick(this.patterns)(theme);
+            attempts++;
+        } while (STATE.usedNames.has(name) && attempts < MAX_ATTEMPTS);
+        return name;
+    },
+};
+
+// Patterns are defined after Generator to safely reference it.
+Generator.patterns = [
+
+    // Pattern 1 — {DevTerm} {ThemeRef}
+    // e.g. "Deploy Like It's Hot" / "Merge Byte Me"
+    (theme) => {
+        const dev = Generator.pick(DATA.devTerms);
+        const ref = Generator.pick(Generator.getRefs(theme));
+        return `${dev} ${ref}`;
+    },
+
+    // Pattern 2 — The {DevTerm} {EpicSuffix}
+    // e.g. "The Feature Chronicles" / "The Refactor Saga"
+    (theme) => {
+        const dev    = Generator.pick(DATA.devTerms);
+        const suffix = Generator.pick(DATA.epicSuffixes);
+        return `The ${dev} ${suffix}`;
+    },
+
+    // Pattern 3 — {FunnyTechTerm} and the {DevTerm}
+    // e.g. "Rubber Duck and the Release"
+    (theme) => {
+        const tech = Generator.pick(DATA.funnyTechTerms);
+        const dev  = Generator.pick(DATA.devTerms);
+        return `${tech} and the ${dev}`;
+    },
+
+    // Pattern 4 — {ActionWord} the {DevTerm}
+    // e.g. "Racing the Release" / "Shipping the Feature"
+    (theme) => {
+        const action = Generator.pick(DATA.actionWords);
+        const dev    = Generator.pick(DATA.devTerms);
+        return `${action} the ${dev}`;
+    },
+
+    // Pattern 5 — Operation {DevTerm}
+    // e.g. "Operation Hotfix" / "Operation Rollback"
+    () => {
+        const dev = Generator.pick(DATA.devTerms);
+        return `Operation ${dev}`;
+    },
+
+    // Pattern 6 — {DevTerm}: {EpicSuffix}
+    // e.g. "Deploy: Reloaded" / "Merge: The Sequel"
+    (theme) => {
+        const dev    = Generator.pick(DATA.devTerms);
+        const suffix = Generator.pick(DATA.epicSuffixes);
+        return `${dev}: ${suffix}`;
+    },
+
+    // Pattern 7 — {ThemePrefix} {DevTerm}
+    // e.g. "Rise of the Merge" / "Quest for the Backlog"
+    (theme) => {
+        const prefix = Generator.pick(Generator.getPrefixes(theme));
+        const dev    = Generator.pick(DATA.devTerms);
+        return `${prefix} ${dev}`;
+    },
+
+    // Pattern 8 — {ActionWord} {DevTerm} {ThemeRef}  (3-part epic combo)
+    // e.g. "Shipping the Feature Like It's Hot"
+    (theme) => {
+        const action = Generator.pick(DATA.actionWords);
+        const dev    = Generator.pick(DATA.devTerms);
+        const ref    = Generator.pick(Generator.getRefs(theme));
+        return `${action} ${dev} ${ref}`;
+    },
+
+    // Pattern 9 — {FunnyTechTerm}: {EpicSuffix}
+    // e.g. "Technical Debt: Reloaded" / "Infinite Loop: Endgame"
+    (theme) => {
+        const tech   = Generator.pick(DATA.funnyTechTerms);
+        const suffix = Generator.pick(DATA.epicSuffixes);
+        return `${tech}: ${suffix}`;
+    },
+
+    // Pattern 10 — {ActionWord} {FunnyTechTerm}
+    // e.g. "Surviving the Memory Leak" / "Taming Merge Conflict"
+    (theme) => {
+        const action = Generator.pick(DATA.actionWords);
+        const tech   = Generator.pick(DATA.funnyTechTerms);
+        return `${action} ${tech}`;
+    },
+];
+
+
+// ============================================================
+// UI — DOM manipulation helpers
+// ============================================================
+const UI = {
+
+    /** Display the generated name in the output area with animation. */
+    showName(name) {
+        const el = document.getElementById('nameDisplay');
+        el.classList.remove('animate', 'has-name');
+        el.innerHTML = `<span class="sprint-name">${escapeHtml(name)}</span>`;
+        // Force reflow so animation restarts
+        void el.offsetWidth;
+        el.classList.add('has-name', 'animate');
+
+        document.getElementById('btnCopy').disabled     = false;
+        document.getElementById('btnFavorite').disabled = false;
+        this.syncFavoriteBtn(name);
+    },
+
+    /** Keep the Favorite button label in sync with current state. */
+    syncFavoriteBtn(name) {
+        const btn   = document.getElementById('btnFavorite');
+        const isFav = STATE.favorites.includes(name);
+        btn.textContent = isFav ? '⭐ Unfavorite' : '☆ Favorite';
+        btn.classList.toggle('favorited', isFav);
+    },
+
+    /** Re-render the history list. */
+    renderHistory() {
+        const list    = document.getElementById('historyList');
+        const counter = document.getElementById('historyCount');
+        counter.textContent = STATE.history.length;
+
+        if (STATE.history.length === 0) {
+            list.innerHTML = '<div class="empty-state">No names generated yet</div>';
+            return;
+        }
+
+        // Display newest first
+        list.innerHTML = STATE.history
+            .slice()
+            .reverse()
+            .map((name, displayIdx) => {
+                const originalIdx = STATE.history.length - 1 - displayIdx;
+                const isFav       = STATE.favorites.includes(name);
+                return `
+                    <div class="list-item">
+                        <span class="list-item-name">${escapeHtml(name)}</span>
+                        <div class="list-item-actions">
+                            <button class="btn-icon ${isFav ? 'active' : ''}"
+                                    data-action="hist-fav"
+                                    data-idx="${originalIdx}"
+                                    title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                                ${isFav ? '⭐' : '☆'}
+                            </button>
+                            <button class="btn-icon"
+                                    data-action="hist-copy"
+                                    data-idx="${originalIdx}"
+                                    title="Copy">
+                                📋
+                            </button>
+                        </div>
+                    </div>`;
+            })
+            .join('');
+    },
+
+    /** Re-render the favorites list. */
+    renderFavorites() {
+        const list      = document.getElementById('favoritesList');
+        const counter   = document.getElementById('favoritesCount');
+        const exportBtn = document.getElementById('btnExport');
+
+        counter.textContent  = STATE.favorites.length;
+        exportBtn.disabled   = STATE.favorites.length === 0;
+        document.getElementById('statFavorites').textContent = STATE.favorites.length;
+
+        if (STATE.favorites.length === 0) {
+            list.innerHTML = '<div class="empty-state">Star a name to save it here</div>';
+            return;
+        }
+
+        list.innerHTML = STATE.favorites
+            .slice()
+            .reverse()
+            .map((name, displayIdx) => {
+                const originalIdx = STATE.favorites.length - 1 - displayIdx;
+                return `
+                    <div class="list-item">
+                        <span class="list-item-name">${escapeHtml(name)}</span>
+                        <div class="list-item-actions">
+                            <button class="btn-icon"
+                                    data-action="fav-copy"
+                                    data-idx="${originalIdx}"
+                                    title="Copy">
+                                📋
+                            </button>
+                            <button class="btn-icon"
+                                    data-action="fav-remove"
+                                    data-idx="${originalIdx}"
+                                    title="Remove from favorites">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>`;
+            })
+            .join('');
+    },
+
+    /** Update the "Generated" stat counter. */
+    updateStats() {
+        document.getElementById('statGenerated').textContent = STATE.totalGenerated;
+    },
+
+    /** Show a brief toast notification. */
+    toast(message) {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.classList.add('visible');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove('visible'), 2600);
+    },
+};
+
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+const Handlers = {
+
+    generate() {
+        const name           = Generator.generate(STATE.currentTheme);
+        STATE.currentName    = name;
+        STATE.usedNames.add(name);
+        STATE.history.push(name);
+        STATE.totalGenerated += 1;
+
+        UI.showName(name);
+        UI.renderHistory();
+        UI.updateStats();
+    },
+
+    copy(name = STATE.currentName) {
+        if (!name) return;
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(name)
+                .then(() => UI.toast(`✅ Copied: "${name}"`))
+                .catch(()  => this._fallbackCopy(name));
+        } else {
+            this._fallbackCopy(name);
+        }
+    },
+
+    _fallbackCopy(name) {
+        const ta = document.createElement('textarea');
+        ta.value = name;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        UI.toast(`✅ Copied: "${name}"`);
+    },
+
+    toggleFavorite(name = STATE.currentName) {
+        if (!name) return;
+        const idx = STATE.favorites.indexOf(name);
+        if (idx === -1) {
+            STATE.favorites.push(name);
+            UI.toast('⭐ Added to favorites!');
+        } else {
+            STATE.favorites.splice(idx, 1);
+            UI.toast('Removed from favorites');
+        }
+        UI.renderFavorites();
+        UI.renderHistory();
+        if (name === STATE.currentName) UI.syncFavoriteBtn(name);
+    },
+
+    removeFavorite(idx) {
+        const name = STATE.favorites[idx];
+        if (name === undefined) return;
+        STATE.favorites.splice(idx, 1);
+        UI.renderFavorites();
+        UI.renderHistory();
+        if (name === STATE.currentName) UI.syncFavoriteBtn(name);
+        UI.toast('Removed from favorites');
+    },
+
+    clearHistory() {
+        if (STATE.history.length === 0) return;
+        STATE.history   = [];
+        STATE.usedNames.clear();
+        UI.renderHistory();
+        UI.toast('History cleared');
+    },
+
+    exportFavorites() {
+        if (STATE.favorites.length === 0) return;
+        const lines = [
+            'Sprint Name Generator — Favorites',
+            '='.repeat(42),
+            '',
+            ...STATE.favorites.map((n, i) => `${i + 1}. ${n}`),
+            '',
+            '='.repeat(42),
+            `Exported: ${new Date().toLocaleString()}`,
+        ];
+        const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+        const url  = URL.createObjectURL(blob);
+        const a    = Object.assign(document.createElement('a'), {
+            href: url,
+            download: 'sprint-name-favorites.txt',
+        });
+        a.click();
+        URL.revokeObjectURL(url);
+        UI.toast('💾 Favorites exported!');
+    },
+
+    setTheme(theme) {
+        STATE.currentTheme = theme;
+        document.querySelectorAll('.theme-pill').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+    },
+};
+
+
+// ============================================================
+// UTILITY
+// ============================================================
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+
+// ============================================================
+// INIT — wire up all event listeners
+// ============================================================
+(function init() {
+
+    // Primary action buttons
+    document.getElementById('btnGenerate')
+        .addEventListener('click', () => Handlers.generate());
+
+    document.getElementById('btnCopy')
+        .addEventListener('click', () => Handlers.copy());
+
+    document.getElementById('btnFavorite')
+        .addEventListener('click', () => Handlers.toggleFavorite());
+
+    document.getElementById('btnClearHistory')
+        .addEventListener('click', () => Handlers.clearHistory());
+
+    document.getElementById('btnExport')
+        .addEventListener('click', () => Handlers.exportFavorites());
+
+    // Theme pills
+    document.getElementById('themePills')
+        .addEventListener('click', (e) => {
+            const pill = e.target.closest('.theme-pill');
+            if (pill) Handlers.setTheme(pill.dataset.theme);
+        });
+
+    // History list — event delegation
+    document.getElementById('historyList')
+        .addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const idx  = parseInt(btn.dataset.idx, 10);
+            const name = STATE.history[idx];
+            if (!name) return;
+            if (btn.dataset.action === 'hist-fav')  Handlers.toggleFavorite(name);
+            if (btn.dataset.action === 'hist-copy') Handlers.copy(name);
+        });
+
+    // Favorites list — event delegation
+    document.getElementById('favoritesList')
+        .addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const idx  = parseInt(btn.dataset.idx, 10);
+            const name = STATE.favorites[idx];
+            if (name === undefined) return;
+            if (btn.dataset.action === 'fav-copy')   Handlers.copy(name);
+            if (btn.dataset.action === 'fav-remove') Handlers.removeFavorite(idx);
+        });
+
+    // Keyboard shortcuts — Space / Enter triggers Generate
+    document.addEventListener('keydown', (e) => {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            Handlers.generate();
+        }
+    });
+
+})();
+</script>
+</body>
+</html>
